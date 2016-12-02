@@ -45,11 +45,9 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		// set title
 		super("DokumentRelinker");
-		// setTitle("DokumentRelinker");
-		// setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// borderLayout is the default..
 		// setLayout(new BorderLayout());
-
+        
 		try {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName())) {
@@ -58,8 +56,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				}
 			}
 		} catch (Exception e) {
-			// If Nimbus is not available, you can set the GUI to another look
-			// and feel.}
+			// if Nimbus is not available, we have to stick to the default l&f
 		}
 
 		// label
@@ -128,7 +125,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 		int retVal = 0;
 
-		// hauptdokument auswahl
+		// master document selection
 		if (event.getSource() == b1) {
 
 			fileChooser = new JFileChooser();
@@ -140,7 +137,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			fileChooser.setAcceptAllFileFilterUsed(false);
 			retVal = fileChooser.showOpenDialog(null);
 		}
-		// zielordner auswahl
+		// target path selection
 		if (event.getSource() == b3) {
 			folderChooser = new JFileChooser();
 			// folderChooser.setCurrentDirectory(new java.io.File("."));
@@ -155,14 +152,20 @@ public class MainFrame extends JFrame implements ActionListener {
 				file = fileChooser.getSelectedFile();
 
 				l2.setText(file.getName());
+				l2.setToolTipText(l2.getText());
 				System.out.println("File: " + file.getName());
+				// make sure the text fits the window width
+				pack();
 				titleLabel.setText("und nun den Zielordner..");
 			}
 			if (folderChooser != null && folderChooser.getSelectedFile() != null) {
 				folder = folderChooser.getSelectedFile();
 
 				l4.setText(folder.getAbsolutePath());
+				l4.setToolTipText(l4.getText());
 				System.out.println("Folder: " + folder.getAbsolutePath());
+				// make sure the text fits the window width
+				pack();
 				if (file != null) {
 					titleLabel.setText("Bereit");
 				} else {
@@ -172,7 +175,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 			retVal = 0;
 
-			// doit
+			// do it
 			if (event.getSource() == processButton) {
 				if (file == null) {
 					titleLabel.setText("Welches Dokument?");
@@ -182,17 +185,7 @@ public class MainFrame extends JFrame implements ActionListener {
 					titleLabel.setText("Verarbeitung läuft..");
 					try {
 						Relinker.setMainDocument(file);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
 						Relinker.setTargetDirectory(folder);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
 						Relinker.process();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

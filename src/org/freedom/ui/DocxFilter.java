@@ -20,25 +20,9 @@ class DocxFilter extends FileFilter {
 			return true;
 		}
 
-		String extension = getExtension(f);
+		String extension = Utils.getExtension(f);
 		return extension != null && extension.equals(DOCX);
 
 	}
-	
-    /*
-     * Get the extension of a file.
-     */  
-    private static String getExtension(File f) {
-    	
-        String ext = null;
-        String s = f.getName();
-        int i = s.lastIndexOf('.');
-
-        if (i > 0 &&  i < s.length() - 1) 
-        {
-            ext = s.substring(i+1).toLowerCase();
-        }
-        return ext;
-    }
 
 }
