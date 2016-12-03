@@ -8,7 +8,7 @@ import org.jdom2.Element;
 import org.jdom2.input.*;
 import org.jdom2.output.*;
 
-public class DocxRelinker extends DocumentRelinker {
+class DocxRelinker extends DocumentRelinker {
 
 	public DocxRelinker(File sourceXML, File targetXML) throws IllegalArgumentException {
 
@@ -16,7 +16,7 @@ public class DocxRelinker extends DocumentRelinker {
 
 	}
 
-	public Set<String> relink(String relatedDir) {
+	public Set<String> relink(String relatedDirName) {
 
 		Set<String> relatedDocuments = new HashSet<String>();
 
@@ -40,7 +40,7 @@ public class DocxRelinker extends DocumentRelinker {
 						System.out.println("target :" + target);
 
 						StringBuilder targetFileName = new StringBuilder(target.length());
-						targetFileName.append(".\\").append(relatedDir).append("\\");
+						targetFileName.append(".\\").append(relatedDirName).append("\\");
 						if (target.contains("\\")) {
 							// \ C:\Folder\Subfolder\File.doc
 							targetFileName.append(target.substring(target.lastIndexOf("\\") + 1));
@@ -67,7 +67,7 @@ public class DocxRelinker extends DocumentRelinker {
 						System.out.println("target :" + target);
 
 						StringBuilder targetFileName = new StringBuilder(target.length());
-						targetFileName.append(".\\").append(relatedDir).append("\\");
+						targetFileName.append(".\\").append(relatedDirName).append("\\");
 						if (target.contains("%5C")) {
 							// C:\Folder\Subfolder\File.doc (\)
 							targetFileName.append(target.substring(target.lastIndexOf("%5C") + 3));

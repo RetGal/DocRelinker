@@ -2,7 +2,7 @@ package org.freedom.ui;
 
 import java.io.File;
 
-public class Utils {
+class Utils {
 
     /*
      * Get the extension of a file.

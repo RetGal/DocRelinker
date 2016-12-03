@@ -84,6 +84,7 @@ public class Relinker {
 		}
 
 		tempDir = targetDirectory + File.separator + ".~";
+		relatedDir = targetDirectory.getAbsolutePath() + File.separator + RELATED;
 
 		cleanUp();
 		// create a brand new temporary folder
@@ -146,7 +147,6 @@ public class Relinker {
 		cleanUp();
 
 		// create related folder
-		relatedDir = targetDirectory.getAbsolutePath() + File.separator + RELATED;
 		f = new File(relatedDir);
 		if (!f.exists() || !f.isDirectory()) {
 			f.mkdir();
@@ -164,12 +164,12 @@ public class Relinker {
 			// read document.xml.rels.bak, manipulate its content and save as document.xml.rels
 			DocxRelinker xmlRelinker = new DocxRelinker(backupXML, originalXML);
 			// a set containing all related documents
-			relatedDocuments.addAll(xmlRelinker.relink(relatedDir));
+			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
 		} else if (mainDocument.getName().endsWith("odt")) {
 			// read cobtent.xml.bak, manipulate its content and save as content.xml
 			OdtRelinker xmlRelinker = new OdtRelinker(backupXML, originalXML);
 			// a set containing all related documents
-			relatedDocuments.addAll(xmlRelinker.relink(relatedDir));
+			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
 		}
 
 	}

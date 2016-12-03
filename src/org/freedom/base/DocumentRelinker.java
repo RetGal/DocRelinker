@@ -1,7 +1,6 @@
 package org.freedom.base;
 
 import java.io.File;
-import java.util.Set;
 
 abstract class DocumentRelinker {
 
@@ -19,8 +18,6 @@ abstract class DocumentRelinker {
 		this.sourceXML = sourceXML;
 		this.targetXML = targetXML;
 	}
-
-	public abstract Set<String> relink(String relatedDir);
 
 	File getSourceXML() {
 		return sourceXML;

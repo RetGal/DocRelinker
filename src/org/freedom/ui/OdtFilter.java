@@ -3,7 +3,7 @@ package org.freedom.ui;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
-public class OdtFilter extends FileFilter {
+class OdtFilter extends FileFilter {
 
 	private final static String ODT = "odt";
 

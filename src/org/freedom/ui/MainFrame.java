@@ -19,25 +19,16 @@ import javax.swing.filechooser.FileFilter;
 
 import org.freedom.base.Relinker;
 
-public class MainFrame extends JFrame implements ActionListener {
+class MainFrame extends JFrame implements ActionListener {
 
-	private JLabel titleLabel;
-	private JPanel mainPanel;
-	private JPanel buttonPanel;
-	private JPanel p1;
-	private JPanel p2;
-	private JPanel p3;
-	private JPanel p4;
-	private JButton b1;
-	private JButton b3;
-	private JLabel l1;
-	private JLabel l2;
-	private JLabel l3;
-	private JLabel l4;
-	private JButton processButton;
+	private final JLabel titleLabel;
+	private final JButton b1;
+	private final JButton b3;
+	private final JLabel l2;
+	private final JLabel l4;
+	private final JButton processButton;
 	private JFileChooser fileChooser;
 	private JFileChooser folderChooser;
-	private FileFilter filter;
 	private File file;
 	private File folder;
 
@@ -65,11 +56,11 @@ public class MainFrame extends JFrame implements ActionListener {
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		// main
-		mainPanel = new JPanel();
-		p1 = new JPanel();
-		p2 = new JPanel();
-		p3 = new JPanel();
-		p4 = new JPanel();
+        JPanel mainPanel = new JPanel();
+		JPanel p1 = new JPanel();
+		JPanel p2 = new JPanel();
+		JPanel p3 = new JPanel();
+		JPanel p4 = new JPanel();
 
 		mainPanel.setLayout(new GridLayout(4, 1));
 		mainPanel.add(p1);
@@ -79,7 +70,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
 		b1 = new JButton("Wähle");
-		l1 = new JLabel("Dokument");
+		JLabel l1 = new JLabel("Dokument");
 
 		p1.add(b1);
 		p1.add(l1);
@@ -88,7 +79,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		p2.add(l2);
 
 		b3 = new JButton("Wähle");
-		l3 = new JLabel("Zielordner");
+		JLabel l3 = new JLabel("Zielordner");
 		p3.add(b3);
 		p3.add(l3);
 
@@ -96,7 +87,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		p4.add(l4);
 
 		// buttons
-		buttonPanel = new JPanel();
+		JPanel buttonPanel = new JPanel();
 		processButton = new JButton("Verarbeite!");
 		buttonPanel.add(processButton);
 		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
@@ -130,7 +121,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
 			fileChooser = new JFileChooser();
 			fileChooser.setDialogTitle("Dokument");
-			filter = new OdtFilter();
+			FileFilter filter = new OdtFilter();
 			fileChooser.setFileFilter(filter);
 			filter = new DocxFilter();
 			fileChooser.setFileFilter(filter);

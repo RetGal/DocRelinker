@@ -9,10 +9,9 @@ import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-public class OdtRelinker extends DocumentRelinker {
+class OdtRelinker extends DocumentRelinker {
 
 	public OdtRelinker(File sourceXML, File targetXML) throws IllegalArgumentException {
 
@@ -21,12 +20,12 @@ public class OdtRelinker extends DocumentRelinker {
 	}
 
 	private Set<String> relatedDocuments;
-	private String relatedDir;
+	private String relatedDirName;
 
-	public Set<String> relink(String relatedDir) {
+	public Set<String> relink(String relatedDirName) {
 
 		relatedDocuments = new HashSet<String>();
-		this.relatedDir = relatedDir;
+		this.relatedDirName = relatedDirName;
 
 		try {
 
@@ -39,7 +38,6 @@ public class OdtRelinker extends DocumentRelinker {
 			// ---- Walk through XML data ----
 			int rootChildren = root.getChildren().size();
 			for (int i = 0; i < rootChildren; i++) {
-				System.out.println(root.getChildren().get(i).getName().equalsIgnoreCase("body"));
 				if (root.getChildren().get(i).getName().equals("body")) {
 					for (Element element : root.getChildren().get(i).getChildren()) {
 						recursive(element);
@@ -49,7 +47,8 @@ public class OdtRelinker extends DocumentRelinker {
 			// ---- Write result ----
 			XMLOutputter outp = new XMLOutputter();
 			// outp.setFormat(Format.getPrettyFormat());
-			outp.setFormat(Format.getCompactFormat());
+			// outp.setFormat(Format.getCompactFormat());
+			// outp.setFormat(Format.getRawFormat());
 			// ---- Write the complete result document to XML file ----
 			FileOutputStream fos = new FileOutputStream(getTargetXML());
 			outp.output(doc, fos);
@@ -67,7 +66,6 @@ public class OdtRelinker extends DocumentRelinker {
 		for (Element el : element.getChildren()) {
 			for (Attribute at : el.getAttributes()) {
 				if (at.getName().equals("href")) {
-					System.out.println(at.getValue());
 					if (!at.getValue().startsWith("http")) {
 						String targetLink = at.getValue();
 						String target;
@@ -81,13 +79,13 @@ public class OdtRelinker extends DocumentRelinker {
 
 						if (target.contains("\\")) {
 							// windows paths
-							targetFileName.append("..\\").append(relatedDir).append("\\");
+							targetFileName.append("..\\").append(relatedDirName).append("\\");
 							if (target.contains("\\")) {
 								targetFileName.append(target.substring(target.lastIndexOf("\\") + 1));
 							}
 						} else if (target.contains("/")) {
 							// *nix paths
-							targetFileName.append("../").append(relatedDir).append("/");
+							targetFileName.append("../").append(relatedDirName).append("/");
 							if (target.contains("/")) {
 								targetFileName.append(target.substring(target.lastIndexOf("/") + 1));
 							}

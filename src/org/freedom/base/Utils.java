@@ -115,7 +115,8 @@ class Utils {
 			} else {
 				// list all the directory contents
 				String files[] = folder.list();
-				for (String temp : files) {
+                assert files != null;
+                for (String temp : files) {
 					// construct the file structure
 					File fileDelete = new File(folder, temp);
 					// recursive delete
