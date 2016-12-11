@@ -1,3 +1,4 @@
 .classpath
 .project
-relinker.jar
+/bin/
+/build/

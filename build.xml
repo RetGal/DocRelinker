@@ -1,19 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project DocumentRelinker">
-    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
-    <!--ANT 1.7 is required                                        -->
-    <!--define folder properties-->
-    <property name="dir.buildfile" value="."/>
-    <property name="dir.workspace" value="${dir.buildfile}/.."/>
-    <property name="dir.jarfile" value="${dir.buildfile}"/>
-    <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/relinker.jar" filesetmanifest="mergewithoutmain">
-            <manifest>
-                <attribute name="Main-Class" value="org.freedom.ui.Launcher"/>
-                <attribute name="Class-Path" value="."/>
-            </manifest>
-            <fileset dir="${dir.jarfile}/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/jdom-2.0.6.jar"/>
-        </jar>
-    </target>
+<project default="compile" name="Create Runnable Jar for Project DocumentRelinker">
+	<property name="dir.binfile" value="." />
+	<property name="dir.src" value="${dir.binfile}/src" />
+	<property name="dir.lib" value="${dir.binfile}/lib" />
+	<property name="dir.bin" value="${dir.binfile}/bin" />
+	<property name="dir.build" value="${dir.binfile}/build" />
+	<property name="main.class" value="org.freedom.ui.Launcher" />
+
+	<path id="project.classpath">
+		<fileset dir="${dir.lib}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="clean">
+		<delete dir="${dir.bin}" />
+		<delete dir="${dir.build}" />
+	</target>
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${dir.bin}" />
+		<mkdir dir="${dir.build}" />
+	</target>
+
+	<target name="compile" depends="init" description="Compile the sources">
+		<javac debug="false" includeantruntime="false" srcdir="${dir.src}" destdir="${dir.bin}" classpathref="project.classpath" />
+		<copy todir="${dir.bin}">
+			<fileset dir="${dir.src}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+		<unjar dest="${dir.bin}">
+		  <fileset dir="${dir.lib}" includes="*.jar" />
+		</unjar>
+	</target>
+
+	<target name="build" depends="compile">
+		<jar destfile="${dir.build}/relinker.jar" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}" />
+				<attribute name="Class-Path" value="."/>
+			</manifest>
+			<fileset dir="${dir.bin}" />
+		</jar>
+	</target>
+
 </project>
