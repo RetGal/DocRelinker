@@ -16,8 +16,9 @@ public class Relinker {
 	private static String relatedDir;
 	private static String tempDir;
 	private static Set<String> relatedDocuments;
+	private static String docType;
 
-    public Relinker(File document, File path) throws IOException {
+	public Relinker(File document, File path) throws IOException {
 		setMainDocument(document);
 		setTargetDirectory(path);
 	}
@@ -33,7 +34,8 @@ public class Relinker {
 				if (!documentName.isEmpty()) {
 					setMainDocument(new File(documentName));
 					String targetPath = Utils.getUserInput("target path").trim();
-					// double quotes appear under windows if the user drags a file
+					// double quotes appear under windows if the user drags a
+					// file
 					// to the command window
 					targetPath = Utils.stripDoublequotes(targetPath);
 					if (!targetPath.isEmpty()) {
@@ -94,10 +96,11 @@ public class Relinker {
 		// deflate the document
 		Utils.unzip(mainDocument.getAbsolutePath(), tempDir);
 
-        List<File> originalXML = new LinkedList<File>();
-        List<File> backupXML = new LinkedList<File>();
+		List<File> originalXML = new LinkedList<File>();
+		List<File> backupXML = new LinkedList<File>();
 
-		if (mainDocument.getName().endsWith("docx")) {
+		if (mainDocument.getName().endsWith(".docx")) {
+			docType = "DOCX";
 			originalXML.add(new File(tempDir + File.separator + "word" + File.separator + "_rels" + File.separator
 					+ "document.xml.rels"));
 			// linked documents from endnotes reside in another file
@@ -106,7 +109,8 @@ public class Relinker {
 			if (endnotes.exists() && endnotes.isFile() && endnotes.canRead()) {
 				originalXML.add(endnotes);
 			}
-		} else if (mainDocument.getName().endsWith("odt")) {
+		} else if (mainDocument.getName().endsWith(".odt")) {
+			docType = "ODT";
 			originalXML.add(new File(tempDir + File.separator + "content.xml"));
 		}
 
@@ -136,7 +140,7 @@ public class Relinker {
 		System.out.println("Re-creating " + mainDocument.getName());
 		// Utils.zipDirectory(new File(targetPath),
 		// targetPath+separator+documentFileName);
-		Utils.zip(new File(tempDir), new File(tempDir + File.separator + mainDocument.getName()));
+		Utils.zip(new File(tempDir), new File(tempDir + File.separator + mainDocument.getName()), docType);
 
 		// move the (re-)created document out of the temporary folder
 		f = new File(tempDir + File.separator + mainDocument.getName());
@@ -161,12 +165,14 @@ public class Relinker {
 	private static void replaceAbsoluteLinks(File backupXML, File originalXML) {
 
 		if (mainDocument.getName().endsWith("docx")) {
-			// read document.xml.rels.bak, manipulate its content and save as document.xml.rels
+			// read document.xml.rels.bak, manipulate its content and save as
+			// document.xml.rels
 			DocxRelinker xmlRelinker = new DocxRelinker(backupXML, originalXML);
 			// a set containing all related documents
 			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
 		} else if (mainDocument.getName().endsWith("odt")) {
-			// read cobtent.xml.bak, manipulate its content and save as content.xml
+			// read cobtent.xml.bak, manipulate its content and save as
+			// content.xml
 			OdtRelinker xmlRelinker = new OdtRelinker(backupXML, originalXML);
 			// a set containing all related documents
 			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
