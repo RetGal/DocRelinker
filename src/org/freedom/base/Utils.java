@@ -107,8 +107,7 @@ class Utils {
 	/**
 	 * Deletes directory and all its subdirectories
 	 * 
-	 * @param folder
-	 *            Specified directory
+	 * @param folder Specified directory
 	 * @throws IOException
 	 */
 	public static void deleteTempData(File folder) {
@@ -141,10 +140,8 @@ class Utils {
 	/**
 	 * Guess what - this one extracts a zipped file
 	 * 
-	 * @param zipFile
-	 *            The file to be unzipped
-	 * @param outputFolder
-	 *            Where the content shall be extracted to
+	 * @param zipFile The file to be unzipped
+	 * @param outputFolder Where the content shall be extracted to
 	 * @throws IllegalArgumentException
 	 * @throws IOException
 	 */
@@ -186,16 +183,12 @@ class Utils {
 	}
 
 	/**
-	 * Zipps specified directory and all its subdirectories (excludes files with
-	 * .odt or .docx suffix) Adds uncompressed mimetype as first file if docType
-	 * is ODT
+	 * Zipps specified directory and all its subdirectories (excludes files with .odt or .docx suffix)
+	 * Adds uncompressed mimetype as first file if docType is ODT 
 	 * 
-	 * @param directory
-	 *            Specified directory
-	 * @param zipFile
-	 *            Output ZIP file name
-	 * @param docType
-	 *            DOCX or ODT
+	 * @param directory Specified directory
+	 * @param zipFile Output ZIP file name
+	 * @param docType DOCX or ODT
 	 * @throws IOException
 	 */
 
@@ -236,7 +229,7 @@ class Utils {
 					} else if (docType.equals("DOCX") && kid.getName().endsWith(".docx")) {
 						continue;
 					} else {
-						System.out.println("Zip adding file " + name);
+						System.out.println("Zip adding file "+name);
 						zout.putNextEntry(new ZipEntry(name));
 						copy(kid, zout);
 						zout.closeEntry();
