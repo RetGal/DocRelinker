@@ -1,15 +1,19 @@
 package org.freedom.base;
 
-import java.io.Closeable;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -134,6 +138,7 @@ class Utils {
 	}
 
 	/**
+	 * Guess what - this one extracts a zipped file
 	 * 
 	 * @param zipFile The file to be unzipped
 	 * @param outputFolder Where the content shall be extracted to
@@ -178,26 +183,32 @@ class Utils {
 	}
 
 	/**
-	 * Zipps specified directory and all its subdirectories (exclude files with .odt or .docx suffix)
+	 * Zipps specified directory and all its subdirectories (excludes files with .odt or .docx suffix)
+	 * Adds uncompressed mimetype as first file if docType is ODT 
 	 * 
 	 * @param directory Specified directory
 	 * @param zipFile Output ZIP file name
+	 * @param docType DOCX or ODT
 	 * @throws IOException
 	 */
 
-	@SuppressWarnings("resource")
-	public static void zip(File directory, File zipFile) throws IOException {
+	public static void zip(File directory, File zipFile, String docType) throws IOException {
 
 		final int waste = directory.getAbsolutePath().length() + 1;
 		Deque<File> queue = new LinkedList<File>();
 		queue.push(directory);
-		OutputStream out = new FileOutputStream(zipFile);
-		Closeable res = out;
-
-		ZipOutputStream zout = new ZipOutputStream(out);
-		res = zout;
+		
+		ZipOutputStream zout =  new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
+		
+		if (docType.equals("ODT")) {
+			zout = writeMimeType(queue, zout);
+		}
+		
+		zout.setMethod(ZipOutputStream.DEFLATED);
+		zout.setLevel(-1);
+				
 		while (!queue.isEmpty()) {
-			directory = queue.pop();
+			directory = queue.pop();				
 			for (File kid : directory.listFiles()) {
 				// we need relative paths inside the zip file
 				String name = kid.getAbsolutePath().substring(waste);
@@ -212,18 +223,51 @@ class Utils {
 					// System.out.println("Zip adding dir "+name);
 					zout.putNextEntry(new ZipEntry(name));
 				} else {
-					if (kid.getName().endsWith(".docx") || kid.getName().endsWith(".odt")) {
+					
+					if (docType.equals("ODT") && (kid.getName().endsWith(".odt") || kid.getName().equals("mimetype"))) {
 						continue;
+					} else if (docType.equals("DOCX") && kid.getName().endsWith(".docx")) {
+						continue;
+					} else {
+						System.out.println("Zip adding file "+name);
+						zout.putNextEntry(new ZipEntry(name));
+						copy(kid, zout);
+						zout.closeEntry();
 					}
-					// System.out.println("Zip adding file "+name);
-					zout.putNextEntry(new ZipEntry(name));
-					copy(kid, zout);
-					zout.closeEntry();
 				}
 			}
 		}
-		res.close();
-		out.close();
+	}
+	
+	private static ZipOutputStream writeMimeType(Deque<File> queue, ZipOutputStream zout) throws IOException {
+		
+		for (File node : queue) {
+			for (File file : node.listFiles()) {
+				// mimetype must be the first entry and not compressed
+				if (file.getName().equals("mimetype")) {
+					System.out.println("Zip adding uncompressed mimetype");
+					
+	                ZipEntry entry = new ZipEntry(file.getName());
+	                entry.setMethod(ZipOutputStream.STORED);
+	                
+					Path path = Paths.get(file.getPath());
+					byte[] data = Files.readAllBytes(path);	                
+	                int len = data.length;
+	                
+	                entry.setSize(len);
+	                entry.setCompressedSize(len);
+	                CRC32 crc32 = new CRC32();
+	                crc32.update(data, 0, len);
+	                entry.setCrc(crc32.getValue());
+	              
+	                zout.putNextEntry(entry);
+	                zout.write(data);
+	                zout.closeEntry();
+					return zout;
+				}
+			}
+		}
+		return zout;
 	}
 
 }

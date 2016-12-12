@@ -16,6 +16,7 @@ public class Relinker {
 	private static String relatedDir;
 	private static String tempDir;
 	private static Set<String> relatedDocuments;
+	private static String docType;
 
     public Relinker(File document, File path) throws IOException {
 		setMainDocument(document);
@@ -97,7 +98,8 @@ public class Relinker {
         List<File> originalXML = new LinkedList<File>();
         List<File> backupXML = new LinkedList<File>();
 
-		if (mainDocument.getName().endsWith("docx")) {
+		if (mainDocument.getName().endsWith(".docx")) {
+			docType = "DOCX";
 			originalXML.add(new File(tempDir + File.separator + "word" + File.separator + "_rels" + File.separator
 					+ "document.xml.rels"));
 			// linked documents from endnotes reside in another file
@@ -106,7 +108,8 @@ public class Relinker {
 			if (endnotes.exists() && endnotes.isFile() && endnotes.canRead()) {
 				originalXML.add(endnotes);
 			}
-		} else if (mainDocument.getName().endsWith("odt")) {
+		} else if (mainDocument.getName().endsWith(".odt")) {
+			docType = "ODT";
 			originalXML.add(new File(tempDir + File.separator + "content.xml"));
 		}
 
@@ -136,7 +139,7 @@ public class Relinker {
 		System.out.println("Re-creating " + mainDocument.getName());
 		// Utils.zipDirectory(new File(targetPath),
 		// targetPath+separator+documentFileName);
-		Utils.zip(new File(tempDir), new File(tempDir + File.separator + mainDocument.getName()));
+		Utils.zip(new File(tempDir), new File(tempDir + File.separator + mainDocument.getName()), docType);
 
 		// move the (re-)created document out of the temporary folder
 		f = new File(tempDir + File.separator + mainDocument.getName());
