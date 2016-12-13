@@ -18,7 +18,7 @@ class DocxRelinker extends DocumentRelinker {
 
 	public Set<String> relink(String relatedDirName) {
 
-		Set<String> relatedDocuments = new HashSet<String>();
+		Set<String> relatedDocuments = new HashSet<>();
 
 		try {
 

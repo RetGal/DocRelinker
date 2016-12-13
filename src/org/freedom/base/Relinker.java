@@ -3,6 +3,8 @@ package org.freedom.base;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -84,6 +86,8 @@ public class Relinker {
 		if (mainDocument == null || targetDirectory == null) {
 			throw new IllegalArgumentException("The main document and the target directory must be set first");
 		}
+		
+		System.out.println("Working Directory = " +System.getProperty("user.dir"));
 
 		tempDir = targetDirectory + File.separator + ".~";
 		relatedDir = targetDirectory.getAbsolutePath() + File.separator + RELATED;
@@ -96,8 +100,8 @@ public class Relinker {
 		// deflate the document
 		Utils.unzip(mainDocument.getAbsolutePath(), tempDir);
 
-		List<File> originalXML = new LinkedList<File>();
-		List<File> backupXML = new LinkedList<File>();
+		List<File> originalXML = new LinkedList<>();
+		List<File> backupXML = new LinkedList<>();
 
 		if (mainDocument.getName().endsWith(".docx")) {
 			docType = "DOCX";
@@ -119,7 +123,7 @@ public class Relinker {
 					"Unexpected file format (" + originalXML.get(0).getName() + " not found)");
 		}
 
-		relatedDocuments = new HashSet<String>();
+		relatedDocuments = new HashSet<>();
 
 		for (int i = 0; i < originalXML.size(); i++) {
 			backupXML.add(new File(originalXML.get(i).getAbsolutePath() + ".bak"));
@@ -164,13 +168,13 @@ public class Relinker {
 
 	private static void replaceAbsoluteLinks(File backupXML, File originalXML) {
 
-		if (mainDocument.getName().endsWith("docx")) {
+		if (docType.equals("DOCX")) {
 			// read document.xml.rels.bak, manipulate its content and save as
 			// document.xml.rels
 			DocxRelinker xmlRelinker = new DocxRelinker(backupXML, originalXML);
 			// a set containing all related documents
 			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
-		} else if (mainDocument.getName().endsWith("odt")) {
+		} else if (docType.equals("ODT")) {
 			// read cobtent.xml.bak, manipulate its content and save as
 			// content.xml
 			OdtRelinker xmlRelinker = new OdtRelinker(backupXML, originalXML);
@@ -197,13 +201,14 @@ public class Relinker {
 			}
 
 			// strings from links may contain special chars like %20
-			File related = new File(URLDecoder.decode(relatedDoc, "utf-8"));
+			String relatedDocStr = URLDecoder.decode(relatedDoc, "utf-8");
+			// maybe relative ?
+			File related = relatedDocStr.startsWith(".."+File.separator) ? fixRelative(relatedDocStr) : new File(relatedDocStr);
 			File destination = new File(URLDecoder.decode(targetFullPath.toString(), "utf-8"));
 
-			System.out.println("related :" + related);
-			System.out.println("destination :" + destination);
+			System.out.println("related: " + related);
+			System.out.println("destination: " + destination);
 
-			System.out.println();
 			if (related.exists()) {
 				Utils.copyFile(related, destination);
 			} else {
@@ -213,8 +218,36 @@ public class Relinker {
 		}
 
 	}
+	
+	static private File fixRelative(String relatedDocStr) {
+		String needle = ".."+File.separator;
+		int len = needle.length();
+		int lastIndex = 0;
+		int count = 0;
+		while (lastIndex != -1) {
+		    lastIndex = relatedDocStr.indexOf(needle, lastIndex);
+		    if (lastIndex != -1) {
+		        count++;
+		        lastIndex += len;
+		    }
+		}
+		if (count > 0) {
+			lastIndex = count*len;
+			ArrayList<String> parts = new ArrayList<>(Arrays.asList(mainDocument.getAbsolutePath().split(File.separator)));
+			//List<String> parts = Arrays.asList(mainDocument.getAbsolutePath().split(File.separator));
+			if (count <= parts.size()) {
+				for (int i=0; i<count; i++) {
+					parts.remove(parts.size()-1);
+				}
+				StringBuilder sb = new StringBuilder(String.join(File.separator, parts));
+				sb.append(File.separator).append(relatedDocStr.substring(lastIndex));
+				return new File(sb.toString());
+			}
+		}
+		return new File(relatedDocStr);
+	}
 
-	private static void cleanUp() throws IOException {
+	private static void cleanUp() {
 
 		// cleanup pre exsiting temporary files
 		File f = new File(tempDir);

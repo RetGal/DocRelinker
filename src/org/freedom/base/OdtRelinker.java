@@ -24,7 +24,7 @@ class OdtRelinker extends DocumentRelinker {
 
 	public Set<String> relink(String relatedDirName) {
 
-		relatedDocuments = new HashSet<String>();
+		relatedDocuments = new HashSet<>();
 		this.relatedDirName = relatedDirName;
 
 		try {

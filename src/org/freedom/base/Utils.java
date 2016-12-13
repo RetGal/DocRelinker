@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -24,7 +25,6 @@ class Utils {
 	 * Obtain user input from command line
 	 * 
 	 * @param whatever
-	 * 
 	 * @return the input from the command line
 	 */
 	public static String getUserInput(String whatever) {
@@ -34,7 +34,6 @@ class Utils {
 		@SuppressWarnings("resource")
 		Scanner scanner = new Scanner(System.in);
 		return scanner.nextLine();
-
 	}
 
 	/**
@@ -45,7 +44,7 @@ class Utils {
 	 */
 	public static String stripDoublequotes(String path) {
 
-		if (path != null && path.startsWith("\"") && path.endsWith("\"")) {
+		if (path != null && (path.startsWith("\"") && path.endsWith("\"")) || (path.startsWith("\'") && path.endsWith("\'"))) {
 			path = path.substring(1, path.length() - 1);
 		}
 		return path;
@@ -53,22 +52,9 @@ class Utils {
 
 	public static void copyFile(File sourceFile, File destinationFile) throws IOException {
 
-		InputStream is = null;
-		OutputStream os = null;
-		try {
-			is = new FileInputStream(sourceFile);
-			os = new FileOutputStream(destinationFile);
-			byte[] buffer = new byte[1024];
-			int length;
-			while ((length = is.read(buffer)) > 0) {
-				os.write(buffer, 0, length);
-			}
-		} finally {
-			assert is != null;
-			is.close();
-			assert os != null;
-			os.close();
-		}
+	    Path source = Paths.get(sourceFile.getPath());
+	    Path destination = Paths.get(destinationFile.getPath());
+		Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
 	}
 
 	private static void copy(InputStream in, OutputStream out) throws IOException {
@@ -85,24 +71,11 @@ class Utils {
 
 	private static void copy(File file, OutputStream out) throws IOException {
 
-		InputStream in = new FileInputStream(file);
-		try {
+		try (InputStream in = new FileInputStream(file)) {
 			copy(in, out);
-		} finally {
-			in.close();
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private static void copy(InputStream in, File file) throws IOException {
-
-		OutputStream out = new FileOutputStream(file);
-		try {
-			copy(in, out);
-		} finally {
-			out.close();
-		}
-	}
 
 	/**
 	 * Deletes directory and all its subdirectories
@@ -195,10 +168,12 @@ class Utils {
 	public static void zip(File directory, File zipFile, String docType) throws IOException {
 
 		final int waste = directory.getAbsolutePath().length() + 1;
-		Deque<File> queue = new LinkedList<File>();
+		Deque<File> queue = new LinkedList<>();
 		queue.push(directory);
 
 		ZipOutputStream zout = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
+		
+		zout.setMethod(ZipOutputStream.STORED);
 
 		if (docType.equals("ODT")) {
 			zout = writeMimeType(queue, zout);
@@ -222,12 +197,11 @@ class Utils {
 					name = name.endsWith("/") ? name : name + "/";
 					// System.out.println("Zip adding dir "+name);
 					zout.putNextEntry(new ZipEntry(name));
+					zout.closeEntry();
 				} else {
 
-					if (docType.equals("ODT") && (kid.getName().endsWith(".odt") || kid.getName().equals("mimetype"))) {
-						continue;
-					} else if (docType.equals("DOCX") && kid.getName().endsWith(".docx")) {
-						continue;
+					if ((docType.equals("ODT") && (kid.getName().endsWith(".odt") || kid.getName().equals("mimetype"))) ||
+							(docType.equals("DOCX") && kid.getName().endsWith(".docx"))) {
 					} else {
 						System.out.println("Zip adding file "+name);
 						zout.putNextEntry(new ZipEntry(name));
@@ -237,6 +211,7 @@ class Utils {
 				}
 			}
 		}
+		zout.close();
 	}
 
 	private static ZipOutputStream writeMimeType(Deque<File> queue, ZipOutputStream zout) throws IOException {
