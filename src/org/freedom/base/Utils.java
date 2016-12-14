@@ -19,6 +19,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.freedom.base.Relinker.DocType;
+import static org.freedom.base.Relinker.DocType.*;
+
 class Utils {
 
 	/**
@@ -37,14 +40,15 @@ class Utils {
 	}
 
 	/**
-	 * Strips double quotes at both ends of a String
+	 * Strips (double) quotes at both ends of a String
 	 * 
 	 * @param path
-	 * @return
+	 * @return path
 	 */
-	public static String stripDoublequotes(String path) {
+	public static String stripQuotes(String path) {
 
-		if (path != null && (path.startsWith("\"") && path.endsWith("\"")) || (path.startsWith("\'") && path.endsWith("\'"))) {
+		if ((path != null && path.length() > 1) && ((path.startsWith("\"") && path.endsWith("\"")) || 
+				(path.startsWith("\'") && path.endsWith("\'")))) {
 			path = path.substring(1, path.length() - 1);
 		}
 		return path;
@@ -165,7 +169,7 @@ class Utils {
 	 * @throws IOException
 	 */
 
-	public static void zip(File directory, File zipFile, String docType) throws IOException {
+	public static void zip(File directory, File zipFile, DocType docType) throws IOException {
 
 		final int waste = directory.getAbsolutePath().length() + 1;
 		Deque<File> queue = new LinkedList<>();
@@ -175,7 +179,7 @@ class Utils {
 		
 		zout.setMethod(ZipOutputStream.STORED);
 
-		if (docType.equals("ODT")) {
+		if (docType.equals(ODT)) {
 			zout = writeMimeType(queue, zout);
 		}
 
@@ -198,17 +202,13 @@ class Utils {
 					// System.out.println("Zip adding dir "+name);
 					zout.putNextEntry(new ZipEntry(name));
 					zout.closeEntry();
-				} else {
-
-					if ((docType.equals("ODT") && (kid.getName().endsWith(".odt") || kid.getName().equals("mimetype"))) ||
-							(docType.equals("DOCX") && kid.getName().endsWith(".docx"))) {
-					} else {
-						System.out.println("Zip adding file "+name);
-						zout.putNextEntry(new ZipEntry(name));
-						copy(kid, zout);
-						zout.closeEntry();
-					}
-				}
+                } else if ((!docType.equals(ODT) || (!kid.getName().endsWith(".odt") && !kid.getName().equals("mimetype"))) &&
+                        (!docType.equals(DOCX) || !kid.getName().endsWith(".docx"))) {
+                    System.out.println("Zip adding file " + name);
+                    zout.putNextEntry(new ZipEntry(name));
+                    copy(kid, zout);
+                    zout.closeEntry();
+                }
 			}
 		}
 		zout.close();

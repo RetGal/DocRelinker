@@ -12,13 +12,15 @@ import java.util.Set;
 
 public class Relinker {
 
+	public enum DocType {ODT, DOCX}
+	
 	private static File mainDocument;
 	private static File targetDirectory;
 	private static final String RELATED = "related";
 	private static String relatedDir;
 	private static String tempDir;
 	private static Set<String> relatedDocuments;
-	private static String docType;
+	private static DocType docType;
 
 	public Relinker(File document, File path) throws IOException {
 		setMainDocument(document);
@@ -31,15 +33,12 @@ public class Relinker {
 			try {
 				String documentName = Utils.getUserInput("main document").trim();
 				// double quotes appear under windows if the user drags a file
-				// to the command window
-				documentName = Utils.stripDoublequotes(documentName);
+				// to the command window while under linux they are being surrounded by quotes
+				documentName = Utils.stripQuotes(documentName);
 				if (!documentName.isEmpty()) {
 					setMainDocument(new File(documentName));
 					String targetPath = Utils.getUserInput("target path").trim();
-					// double quotes appear under windows if the user drags a
-					// file
-					// to the command window
-					targetPath = Utils.stripDoublequotes(targetPath);
+					targetPath = Utils.stripQuotes(targetPath);
 					if (!targetPath.isEmpty()) {
 						setTargetDirectory(new File(targetPath));
 						break;
@@ -87,7 +86,7 @@ public class Relinker {
 			throw new IllegalArgumentException("The main document and the target directory must be set first");
 		}
 		
-		System.out.println("Working Directory = " +System.getProperty("user.dir"));
+		System.out.println("Working directory: " +System.getProperty("user.dir"));
 
 		tempDir = targetDirectory + File.separator + ".~";
 		relatedDir = targetDirectory.getAbsolutePath() + File.separator + RELATED;
@@ -104,7 +103,7 @@ public class Relinker {
 		List<File> backupXML = new LinkedList<>();
 
 		if (mainDocument.getName().endsWith(".docx")) {
-			docType = "DOCX";
+			docType = DocType.DOCX;
 			originalXML.add(new File(tempDir + File.separator + "word" + File.separator + "_rels" + File.separator
 					+ "document.xml.rels"));
 			// linked documents from endnotes reside in another file
@@ -114,7 +113,7 @@ public class Relinker {
 				originalXML.add(endnotes);
 			}
 		} else if (mainDocument.getName().endsWith(".odt")) {
-			docType = "ODT";
+			docType = DocType.ODT;
 			originalXML.add(new File(tempDir + File.separator + "content.xml"));
 		}
 
@@ -168,15 +167,13 @@ public class Relinker {
 
 	private static void replaceAbsoluteLinks(File backupXML, File originalXML) {
 
-		if (docType.equals("DOCX")) {
-			// read document.xml.rels.bak, manipulate its content and save as
-			// document.xml.rels
+		if (docType.equals(DocType.DOCX)) {
+			// read document.xml.rels.bak, manipulate its content and save as document.xml.rels
 			DocxRelinker xmlRelinker = new DocxRelinker(backupXML, originalXML);
 			// a set containing all related documents
 			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
-		} else if (docType.equals("ODT")) {
-			// read cobtent.xml.bak, manipulate its content and save as
-			// content.xml
+		} else if (docType.equals(DocType.ODT)) {
+			// read cobtent.xml.bak, manipulate its content and save as content.xml
 			OdtRelinker xmlRelinker = new OdtRelinker(backupXML, originalXML);
 			// a set containing all related documents
 			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
@@ -206,8 +203,8 @@ public class Relinker {
 			File related = relatedDocStr.startsWith(".."+File.separator) ? fixRelative(relatedDocStr) : new File(relatedDocStr);
 			File destination = new File(URLDecoder.decode(targetFullPath.toString(), "utf-8"));
 
-			System.out.println("related: " + related);
-			System.out.println("destination: " + destination);
+			System.out.println("Related: " + related);
+			System.out.println("Destination: " + destination);
 
 			if (related.exists()) {
 				Utils.copyFile(related, destination);
@@ -234,14 +231,11 @@ public class Relinker {
 		if (count > 0) {
 			lastIndex = count*len;
 			ArrayList<String> parts = new ArrayList<>(Arrays.asList(mainDocument.getAbsolutePath().split(File.separator)));
-			//List<String> parts = Arrays.asList(mainDocument.getAbsolutePath().split(File.separator));
 			if (count <= parts.size()) {
 				for (int i=0; i<count; i++) {
 					parts.remove(parts.size()-1);
 				}
-				StringBuilder sb = new StringBuilder(String.join(File.separator, parts));
-				sb.append(File.separator).append(relatedDocStr.substring(lastIndex));
-				return new File(sb.toString());
+				return new File(String.join(File.separator, parts) + File.separator + relatedDocStr.substring(lastIndex));
 			}
 		}
 		return new File(relatedDocStr);

@@ -40,7 +40,7 @@ class OdtRelinker extends DocumentRelinker {
 			for (int i = 0; i < rootChildren; i++) {
 				if (root.getChildren().get(i).getName().equals("body")) {
 					for (Element element : root.getChildren().get(i).getChildren()) {
-						recursive(element);
+						walkThrough(element);
 					}
 				}
 			}
@@ -61,7 +61,7 @@ class OdtRelinker extends DocumentRelinker {
 		return relatedDocuments;
 	}
 
-	private void recursive(Element element) {
+	private void walkThrough(Element element) {
 
 		for (Element el : element.getChildren()) {
 			for (Attribute at : el.getAttributes()) {
@@ -99,7 +99,7 @@ class OdtRelinker extends DocumentRelinker {
 				}
 			}
 			if (el.getChildren().size() > 0) {
-				recursive(el);
+				walkThrough(el);
 			}
 		}
 
