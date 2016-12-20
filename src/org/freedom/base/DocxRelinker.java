@@ -64,7 +64,7 @@ class DocxRelinker extends DocumentRelinker {
 						// http://127.0.0.1:4664/redir?url=file%3A%2F%2F length = 45
 						String target = targetLink.substring(45, targetLink.lastIndexOf("%3F"));
 						relatedDocuments.add(target);
-						System.out.println("target :" + target);
+						System.out.println("gds target :" + target);
 
 						StringBuilder targetFileName = new StringBuilder(target.length());
 						targetFileName.append(".\\").append(relatedDirName).append("\\");
@@ -95,8 +95,6 @@ class DocxRelinker extends DocumentRelinker {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-
-		System.out.println("Number of related documents in " + getTargetXML() + ": " + relatedDocuments.size());
 
 		return relatedDocuments;
 	}

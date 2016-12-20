@@ -183,7 +183,8 @@ public class Relinker {
 
 	private static void copyRelatedDocuments() throws IOException {
 
-		System.out.println("Total number of related documents: " + relatedDocuments.size());
+		System.out.println("Total number of related files: " + relatedDocuments.size());
+		int copied = 0;
 		for (String relatedDoc : relatedDocuments) {
 			StringBuilder targetFullPath = new StringBuilder(relatedDir);
 			targetFullPath.append(File.separator);
@@ -203,16 +204,17 @@ public class Relinker {
 			File related = relatedDocStr.startsWith(".."+File.separator) ? fixRelative(relatedDocStr) : new File(relatedDocStr);
 			File destination = new File(URLDecoder.decode(targetFullPath.toString(), "utf-8"));
 
-			System.out.println("Related: " + related);
-			System.out.println("Destination: " + destination);
+			System.out.println("Copying '" + related +"' to '" + destination+ "'");
 
 			if (related.exists()) {
 				Utils.copyFile(related, destination);
+				++copied;
 			} else {
-				System.err.println("Related document '" + relatedDoc + "' related '" + related + "' not found");
+				System.err.println("File '" + related + "' not found");
 			}
 
 		}
+		System.out.println("Copied " + copied + " of " + relatedDocuments.size() + " files");
 
 	}
 	
