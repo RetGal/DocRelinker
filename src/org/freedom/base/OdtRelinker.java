@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jdom2.Attribute;
@@ -73,56 +75,22 @@ class OdtRelinker extends DocumentRelinker {
 			for (Attribute at : el.getAttributes()) {
 				if (at.getName().equals("href")) {
 					if (at.getValue().startsWith("http://127.0.0.1:4664/redir?url=file%3A%2F%2F")) {
-						// handle Google Desktop Search
-						String targetLink = at.getValue();
-						String target = targetLink.substring(45, targetLink.lastIndexOf("%3F"));
-						relatedDocuments.add(target);
-						System.out.println("gds target :" + target);
-
-						StringBuilder targetFileName = new StringBuilder(target.length());
-						targetFileName.append(".\\").append(relatedDirName).append("\\");
-						if (target.contains("%5C")) {
-							// C:\Folder\Subfolder\File.doc (\)
-							targetFileName.append(target.substring(target.lastIndexOf("%5C") + 3));
-						} else if (target.contains("%3A")) {
-							// C:File.doc (:)
-							targetFileName.append(target.substring(target.indexOf("%3A") + 3));
-						} else {
-							targetFileName.append(target);
-						}
+						// handle Google Desktop Search links
+						List<String> targetStrings = handleGDS(at.getValue(), relatedDirName);
+						relatedDocuments.add(targetStrings.get(0));
+						System.out.println("TargetFileName: " + targetStrings.get(1));
 						// ---- Modify XML data ----
-						at.setValue(targetFileName.toString());
+						at.setValue(targetStrings.get(1));
 
-					} else if (!at.getValue().startsWith("http") && !at.getValue().startsWith("Pictures")
-							&& !at.getValue().startsWith("mailto:") && !at.getValue().startsWith("javascript:")) {
-						String targetLink = at.getValue();
-						String target;
-						if (targetLink.contains("file:///")) {
-							target = targetLink.substring(8, targetLink.length());
-						} else {
-							target = targetLink;
+					} else {
+						// handle regular file links
+						List<String> targetStrings = handleLink(at.getValue(), relatedDirName);
+						if (!targetStrings.isEmpty()) {
+							relatedDocuments.add(targetStrings.get(0));
+							System.out.println("TargetFileName: " + targetStrings.get(1));
+							// ---- Modify XML data ----
+							at.setValue(targetStrings.get(1));
 						}
-						relatedDocuments.add(target);
-						StringBuilder targetFileName = new StringBuilder();
-
-						if (target.contains("\\")) {
-							// windows paths
-							targetFileName.append("..\\").append(relatedDirName).append("\\");
-							if (target.contains("\\")) {
-								targetFileName.append(target.substring(target.lastIndexOf("\\") + 1));
-							}
-						} else if (target.contains("/")) {
-							// *nix paths
-							targetFileName.append("../").append(relatedDirName).append("/");
-							if (target.contains("/")) {
-								targetFileName.append(target.substring(target.lastIndexOf("/") + 1));
-							}
-						} else {
-							// no paths
-							targetFileName.append(target);
-						}
-						// ---- Modify XML data ----
-						at.setValue(targetFileName.toString());
 					}
 				}
 			}
@@ -131,6 +99,51 @@ class OdtRelinker extends DocumentRelinker {
 			}
 		}
 
+	}
+
+	/**
+	 * handles regular ODT links
+	 */
+	private List<String> handleLink(String link, String relatedDirName) {
+		if (link == null || relatedDirName == null) {
+			throw new IllegalArgumentException("link and related dir must not be null");
+		}
+
+		List<String> targetStrings = new ArrayList<>();
+		// skip internal and other non file links
+		if (!link.startsWith("http") && !link.startsWith("Pictures") && !link.startsWith("mailto:")
+				&& !link.startsWith("javascript:")) {
+			String target;
+			if (link.contains("file:///")) {
+				target = link.substring(8, link.length());
+			} else {
+				target = link;
+			}
+			// set cleaned original filename including its path
+			targetStrings.add(target);
+			System.out.println("target: " + target);
+
+			StringBuilder targetFileName = new StringBuilder();
+			if (target.contains("\\")) {
+				// windows paths
+				targetFileName.append("..\\").append(relatedDirName).append("\\");
+				if (target.contains("\\")) {
+					targetFileName.append(target.substring(target.lastIndexOf("\\") + 1));
+				}
+			} else if (target.contains("/")) {
+				// *nix paths
+				targetFileName.append("../").append(relatedDirName).append("/");
+				if (target.contains("/")) {
+					targetFileName.append(target.substring(target.lastIndexOf("/") + 1));
+				}
+			} else {
+				// no paths
+				targetFileName.append(target);
+			}
+			// set the new link to the file which will be valid after the file will have been moved
+			targetStrings.add(targetFileName.toString());
+		}
+		return targetStrings;
 	}
 
 	/**
