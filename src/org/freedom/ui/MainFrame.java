@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -20,7 +22,7 @@ import javax.swing.filechooser.FileFilter;
 import org.freedom.log.Log;
 import org.freedom.base.Relinker;
 
-class MainFrame extends JFrame implements ActionListener {
+class MainFrame extends JFrame implements ActionListener, ComponentListener {
 
 	private final JLabel titleLabel;
 	private final JButton b1;
@@ -33,12 +35,21 @@ class MainFrame extends JFrame implements ActionListener {
 	private File file;
 	private File folder;
 
+	static final int WIDTH = 560;
+	static final int HEIGHT = 280;
+
+	static final int MIN_WIDTH = 560;
+	static final int MIN_HEIGHT = 280;
+
 	public MainFrame() {
 
 		// set title
 		super("DokumentRelinker");
 		// borderLayout is the default..
 		// setLayout(new BorderLayout());
+
+		setSize(WIDTH, HEIGHT);
+		addComponentListener(this);
 
 		try {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -70,8 +81,8 @@ class MainFrame extends JFrame implements ActionListener {
 		mainPanel.add(p4);
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-		b1 = new JButton("Wähle");
-		JLabel l1 = new JLabel("Dokument");
+		b1 = new JButton("\u2609 Dokument");
+		JLabel l1 = new JLabel("");
 
 		p1.add(b1);
 		p1.add(l1);
@@ -79,8 +90,8 @@ class MainFrame extends JFrame implements ActionListener {
 		l2 = new JLabel();
 		p2.add(l2);
 
-		b3 = new JButton("Wähle");
-		JLabel l3 = new JLabel("Zielordner");
+		b3 = new JButton("\u2609 Zielordner");
+		JLabel l3 = new JLabel("");
 		p3.add(b3);
 		p3.add(l3);
 
@@ -89,7 +100,7 @@ class MainFrame extends JFrame implements ActionListener {
 
 		// buttons
 		JPanel buttonPanel = new JPanel();
-		processButton = new JButton("Verarbeite!");
+		processButton = new JButton("\u2699 Verarbeite");
 		buttonPanel.add(processButton);
 		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
@@ -146,8 +157,6 @@ class MainFrame extends JFrame implements ActionListener {
 				l2.setText(file.getName());
 				l2.setToolTipText(l2.getText());
 				Log.info("File: " + file.getName());
-				// make sure the text fits the window width
-				pack();
 				titleLabel.setText("und nun den Zielordner..");
 			}
 			if (folderChooser != null && folderChooser.getSelectedFile() != null) {
@@ -167,12 +176,12 @@ class MainFrame extends JFrame implements ActionListener {
 				} else {
 					titleLabel.setText("Es ist noch kein Dokument ausgewählt");
 				}
-				// make sure the text fits the window width
-				pack();
+
 			}
 			retVal = 0;
 
 			// do it
+			int copied = 0;
 			if (event.getSource() == processButton) {
 				if (file == null) {
 					titleLabel.setText("Welches Dokument?");
@@ -183,16 +192,54 @@ class MainFrame extends JFrame implements ActionListener {
 					try {
 						Relinker.setMainDocument(file);
 						Relinker.setTargetDirectory(folder);
-						Relinker.process();
+						copied = Relinker.process();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} finally {
-						titleLabel.setText("Fertig!");
+						titleLabel.setText("Fertig ("+copied+ " verlinkte Dateien kopiert)");
 					}
 				}
 			}
 		}
+	}
+
+	@Override
+	public void componentResized(ComponentEvent e) {
+
+		int width = getWidth();
+		int height = getHeight();
+
+		boolean resize = false;
+		// check if either width or height are below minimum
+		if (width < MIN_WIDTH) {
+			resize = true;
+			width = MIN_WIDTH;
+		}
+		if (height < MIN_HEIGHT) {
+			resize = true;
+			height = MIN_HEIGHT;
+		}
+		if (resize) {
+			setSize(width, height);
+		}
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {
+	}
+
+	@Override
+	public void componentShown(ComponentEvent e) {
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent e) {
+	}
+
+	public static void main(String args[]) {
+		MainFrame f = new MainFrame();
+		f.setVisible(true);
 	}
 
 }

@@ -82,7 +82,7 @@ public class Relinker {
 		return targetDirectory;
 	}
 
-	public static void process() throws IOException {
+	public static int process() throws IOException {
 
 		if (mainDocument == null || targetDirectory == null) {
 			throw new IllegalArgumentException("The main document and the target directory must be set first");
@@ -163,7 +163,7 @@ public class Relinker {
 
 		// copy all related documents to the related folder inside the target
 		Log.info("Copying the related documents to " + relatedDir);
-		copyRelatedDocuments();
+		return copyRelatedDocuments();
 
 	}
 
@@ -183,7 +183,7 @@ public class Relinker {
 
 	}
 
-	private static void copyRelatedDocuments() throws IOException {
+	private static int copyRelatedDocuments() throws IOException {
 
 		Log.info("Total number of related files: " + relatedDocuments.size());
 		int copied = 0;
@@ -217,7 +217,7 @@ public class Relinker {
 
 		}
 		Log.info("Copied " + copied + " of " + relatedDocuments.size() + " files");
-
+		return copied;
 	}
 	
 	static private File fixRelative(String relatedDocStr) {
