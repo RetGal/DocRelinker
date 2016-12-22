@@ -8,6 +8,8 @@ import org.jdom2.Element;
 import org.jdom2.input.*;
 import org.jdom2.output.*;
 
+import org.freedom.log.Log;
+
 class DocxRelinker extends DocumentRelinker {
 
 	public DocxRelinker(File sourceXML, File targetXML) throws IllegalArgumentException {
@@ -22,7 +24,7 @@ class DocxRelinker extends DocumentRelinker {
 
 		try {
 
-			System.out.println("Processing XML");
+			Log.info("Processing XML");
 			// ---- Read XML file ----
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(getSourceXML()); // <XmlFile>
@@ -33,19 +35,19 @@ class DocxRelinker extends DocumentRelinker {
 			for (int i = 0; i < children; i++) {
 				if (root.getChildren().get(i).getAttribute("TargetMode") != null) {
 					String targetLink = root.getChildren().get(i).getAttributeValue("Target");
-					System.out.println("targetLink: " + targetLink);
+					Log.info("targetLink: " + targetLink);
 					if (targetLink.startsWith("file:///")) {
 						// handle regular file links
 						List<String> targetStrings = handleLink(targetLink, relatedDirName);
 						relatedDocuments.add(targetStrings.get(0));
-						System.out.println("TargetFileName: " + targetStrings.get(1));
+						Log.info("TargetFileName: " + targetStrings.get(1));
 						// ---- Modify XML data ----
 						root.getChildren().get(i).setAttribute("Target", targetStrings.get(1));
 					} else if (targetLink.startsWith("http://127.0.0.1:4664/redir?url=file%3A%2F%2F")) {
 						// handle Google Desktop Search links
 						List<String> targetStrings = handleGDS(targetLink, relatedDirName);
 						relatedDocuments.add(targetStrings.get(0));
-						System.out.println("TargetFileName: " + targetStrings.get(1));
+						Log.info("TargetFileName: " + targetStrings.get(1));
 						// ---- Modify XML data ----
 						root.getChildren().get(i).setAttribute("Target", targetStrings.get(1));
 					}
@@ -79,7 +81,7 @@ class DocxRelinker extends DocumentRelinker {
 		String target = link.substring(8, link.length());
 		// set cleaned original filename including its path
 		targetStrings.add(target);
-		System.out.println("target: " + target);
+		Log.info("target: " + target);
 
 		StringBuilder targetFileName = new StringBuilder(target.length());
 		targetFileName.append(".\\").append(relatedDirName).append("\\");
@@ -87,8 +89,8 @@ class DocxRelinker extends DocumentRelinker {
 			// \ C:\Folder\Subfolder\File.doc
 			targetFileName.append(target.substring(target.lastIndexOf("\\") + 1));
 		} else if (target.contains(":")) {
-			// : C:\File.doc
-			targetFileName.append(target.substring(target.indexOf(":") + 2));
+			// : C:File.doc
+			targetFileName.append(target.substring(target.indexOf(":") + 1));
 		} else {
 			targetFileName.append(target);
 		}

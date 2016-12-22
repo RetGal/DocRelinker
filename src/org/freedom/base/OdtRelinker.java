@@ -3,6 +3,7 @@ package org.freedom.base;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,6 +19,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.output.support.AbstractXMLOutputProcessor;
 import org.jdom2.output.support.FormatStack;
 import org.jdom2.output.support.XMLOutputProcessor;
+
+import org.freedom.log.Log;
 
 class OdtRelinker extends DocumentRelinker {
 
@@ -37,7 +40,7 @@ class OdtRelinker extends DocumentRelinker {
 
 		try {
 
-			System.out.println("Processing XML");
+			Log.info("Processing XML");
 			// ---- Read XML file ----
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(getSourceXML()); // <XmlFile>
@@ -69,7 +72,7 @@ class OdtRelinker extends DocumentRelinker {
 		return relatedDocuments;
 	}
 
-	private void walkThrough(Element element) {
+	private void walkThrough(Element element) throws UnsupportedEncodingException {
 
 		for (Element el : element.getChildren()) {
 			for (Attribute at : el.getAttributes()) {
@@ -78,7 +81,7 @@ class OdtRelinker extends DocumentRelinker {
 						// handle Google Desktop Search links
 						List<String> targetStrings = handleGDS(at.getValue(), relatedDirName);
 						relatedDocuments.add(targetStrings.get(0));
-						System.out.println("TargetFileName: " + targetStrings.get(1));
+						Log.info("TargetFileName: " + targetStrings.get(1));
 						// ---- Modify XML data ----
 						at.setValue(targetStrings.get(1));
 
@@ -87,7 +90,7 @@ class OdtRelinker extends DocumentRelinker {
 						List<String> targetStrings = handleLink(at.getValue(), relatedDirName);
 						if (!targetStrings.isEmpty()) {
 							relatedDocuments.add(targetStrings.get(0));
-							System.out.println("TargetFileName: " + targetStrings.get(1));
+							Log.info("TargetFileName: " + targetStrings.get(1));
 							// ---- Modify XML data ----
 							at.setValue(targetStrings.get(1));
 						}
@@ -121,7 +124,7 @@ class OdtRelinker extends DocumentRelinker {
 			}
 			// set cleaned original filename including its path
 			targetStrings.add(target);
-			System.out.println("target: " + target);
+			Log.info("target: " + target);
 
 			StringBuilder targetFileName = new StringBuilder();
 			if (target.contains("\\")) {

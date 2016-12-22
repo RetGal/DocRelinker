@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.freedom.log.Log;
+
 public class Relinker {
 
 	public enum DocType {ODT, DOCX}
@@ -45,7 +47,7 @@ public class Relinker {
 					}
 				}
 			} catch (IOException e) {
-				System.out.println(e.getMessage());
+				Log.info(e.getMessage());
 			}
 		}
 		process();
@@ -86,7 +88,7 @@ public class Relinker {
 			throw new IllegalArgumentException("The main document and the target directory must be set first");
 		}
 		
-		System.out.println("Working directory: " +System.getProperty("user.dir"));
+		Log.info("Working directory: " +System.getProperty("user.dir"));
 
 		tempDir = targetDirectory + File.separator + ".~";
 		relatedDir = targetDirectory.getAbsolutePath() + File.separator + RELATED;
@@ -140,7 +142,7 @@ public class Relinker {
 		}
 
 		// re-create the document
-		System.out.println("Re-creating " + mainDocument.getName());
+		Log.info("Re-creating " + mainDocument.getName());
 		// Utils.zipDirectory(new File(targetPath),
 		// targetPath+separator+documentFileName);
 		Utils.zip(new File(tempDir), new File(tempDir + File.separator + mainDocument.getName()), docType);
@@ -150,7 +152,7 @@ public class Relinker {
 		f.renameTo(new File(targetDirectory.getAbsolutePath() + File.separator + mainDocument.getName()));
 
 		// delete the temporary folder including its content
-		System.out.println("Removing " + tempDir);
+		Log.info("Removing " + tempDir);
 		cleanUp();
 
 		// create related folder
@@ -160,7 +162,7 @@ public class Relinker {
 		}
 
 		// copy all related documents to the related folder inside the target
-		System.out.println("Copying the related documents to " + relatedDir);
+		Log.info("Copying the related documents to " + relatedDir);
 		copyRelatedDocuments();
 
 	}
@@ -183,7 +185,7 @@ public class Relinker {
 
 	private static void copyRelatedDocuments() throws IOException {
 
-		System.out.println("Total number of related files: " + relatedDocuments.size());
+		Log.info("Total number of related files: " + relatedDocuments.size());
 		int copied = 0;
 		for (String relatedDoc : relatedDocuments) {
 			StringBuilder targetFullPath = new StringBuilder(relatedDir);
@@ -204,7 +206,7 @@ public class Relinker {
 			File related = relatedDocStr.startsWith(".."+File.separator) ? fixRelative(relatedDocStr) : new File(relatedDocStr);
 			File destination = new File(URLDecoder.decode(targetFullPath.toString(), "utf-8"));
 
-			System.out.println("Copying '" + related +"' to '" + destination+ "'");
+			Log.info("Copying '" + related +"' to '" + destination+ "'");
 
 			if (related.exists()) {
 				Utils.copyFile(related, destination);
@@ -214,7 +216,7 @@ public class Relinker {
 			}
 
 		}
-		System.out.println("Copied " + copied + " of " + relatedDocuments.size() + " files");
+		Log.info("Copied " + copied + " of " + relatedDocuments.size() + " files");
 
 	}
 	

@@ -17,6 +17,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.filechooser.FileFilter;
 
+import org.freedom.log.Log;
 import org.freedom.base.Relinker;
 
 class MainFrame extends JFrame implements ActionListener {
@@ -38,7 +39,7 @@ class MainFrame extends JFrame implements ActionListener {
 		super("DokumentRelinker");
 		// borderLayout is the default..
 		// setLayout(new BorderLayout());
-        
+
 		try {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName())) {
@@ -56,7 +57,7 @@ class MainFrame extends JFrame implements ActionListener {
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		// main
-        JPanel mainPanel = new JPanel();
+		JPanel mainPanel = new JPanel();
 		JPanel p1 = new JPanel();
 		JPanel p2 = new JPanel();
 		JPanel p3 = new JPanel();
@@ -144,7 +145,7 @@ class MainFrame extends JFrame implements ActionListener {
 
 				l2.setText(file.getName());
 				l2.setToolTipText(l2.getText());
-				System.out.println("File: " + file.getName());
+				Log.info("File: " + file.getName());
 				// make sure the text fits the window width
 				pack();
 				titleLabel.setText("und nun den Zielordner..");
@@ -152,17 +153,22 @@ class MainFrame extends JFrame implements ActionListener {
 			if (folderChooser != null && folderChooser.getSelectedFile() != null) {
 				folder = folderChooser.getSelectedFile();
 
-				l4.setText(folder.getAbsolutePath());
-				l4.setToolTipText(l4.getText());
-				System.out.println("Folder: " + folder.getAbsolutePath());
-				// make sure the text fits the window width
-				pack();
 				if (file != null) {
-					titleLabel.setText("Bereit");
+					if (file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf(File.separator))
+							.equals(folder.getAbsolutePath())) {
+						titleLabel.setText("Dokument darf sich nicht im Zielordner befinden");
+						folder = null;
+					} else {
+						l4.setText(folder.getAbsolutePath());
+						l4.setToolTipText(l4.getText());
+						Log.info("Folder: " + folder.getAbsolutePath());
+						titleLabel.setText("Bereit");
+					}
 				} else {
 					titleLabel.setText("Es ist noch kein Dokument ausgewählt");
 				}
-
+				// make sure the text fits the window width
+				pack();
 			}
 			retVal = 0;
 

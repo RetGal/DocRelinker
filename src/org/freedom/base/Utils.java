@@ -19,6 +19,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.freedom.log.Log;
 import org.freedom.base.Relinker.DocType;
 import static org.freedom.base.Relinker.DocType.*;
 
@@ -132,7 +133,7 @@ class Utils {
 			throw new IllegalArgumentException("output folder must be specified");
 		}
 
-		System.out.println("Extracting " + zipFile + " into " + outputFolder);
+		Log.info("Extracting " + zipFile + " into " + outputFolder);
 		ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
 		ZipEntry ze = zis.getNextEntry();
 		while (ze != null) {
@@ -149,13 +150,13 @@ class Utils {
 				fos.write(buffer, 0, len);
 			}
 			fos.close();
-			// System.out.println("OK!");
+			// Log.info("OK!");
 			ze = zis.getNextEntry();
 		}
 		zis.closeEntry();
 		zis.close();
 
-		System.out.println("Extraction completed");
+		Log.info("Extraction completed");
 
 	}
 
@@ -195,16 +196,16 @@ class Utils {
 				if (File.separatorChar != '/') {
 					name = name.replace(File.separatorChar, '/');
 				}
-				// System.out.println(name);
+				// Log.info(name);
 				if (kid.isDirectory()) {
 					queue.push(kid);
 					name = name.endsWith("/") ? name : name + "/";
-					// System.out.println("Zip adding dir "+name);
+					// Log.info("Zip adding dir "+name);
 					zout.putNextEntry(new ZipEntry(name));
 					zout.closeEntry();
                 } else if ((!docType.equals(ODT) || (!kid.getName().endsWith(".odt") && !kid.getName().equals("mimetype"))) &&
                         (!docType.equals(DOCX) || !kid.getName().endsWith(".docx"))) {
-                    System.out.println("Zip adding file " + name);
+                    Log.info("Zip adding file " + name);
                     zout.putNextEntry(new ZipEntry(name));
                     copy(kid, zout);
                     zout.closeEntry();
@@ -220,7 +221,7 @@ class Utils {
 			for (File file : node.listFiles()) {
 				// mimetype must be the first entry and not compressed
 				if (file.getName().equals("mimetype")) {
-					System.out.println("Zip adding uncompressed mimetype");
+					Log.info("Zip adding uncompressed mimetype");
 
 					ZipEntry entry = new ZipEntry(file.getName());
 					entry.setMethod(ZipOutputStream.STORED);
