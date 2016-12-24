@@ -197,7 +197,13 @@ class MainFrame extends JFrame implements ActionListener, ComponentListener {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} finally {
-						titleLabel.setText("Fertig ("+copied+ " verlinkte Dateien kopiert)");
+						if (copied == 0) {
+							titleLabel.setText("Fertig (keine verlinkte Dateien kopiert)");
+						} else if (copied == 1) {
+							titleLabel.setText("Fertig (eine verlinkte Datei kopiert)");
+						} else {
+							titleLabel.setText("Fertig ("+copied+ " verlinkte Dateien kopiert)");
+						}
 					}
 				}
 			}
