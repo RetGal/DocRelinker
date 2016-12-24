@@ -81,7 +81,7 @@ class OdtRelinker extends DocumentRelinker {
 						// handle Google Desktop Search links
 						List<String> targetStrings = handleGDS(at.getValue(), relatedDirName);
 						relatedDocuments.add(targetStrings.get(0));
-						Log.info("TargetFileName: " + targetStrings.get(1));
+						Log.info("Related file: " + targetStrings.get(1));
 						// ---- Modify XML data ----
 						at.setValue(targetStrings.get(1));
 
@@ -90,7 +90,7 @@ class OdtRelinker extends DocumentRelinker {
 						List<String> targetStrings = handleLink(at.getValue(), relatedDirName);
 						if (!targetStrings.isEmpty()) {
 							relatedDocuments.add(targetStrings.get(0));
-							Log.info("TargetFileName: " + targetStrings.get(1));
+							Log.info("Related file: " + targetStrings.get(1));
 							// ---- Modify XML data ----
 							at.setValue(targetStrings.get(1));
 						}
@@ -124,7 +124,7 @@ class OdtRelinker extends DocumentRelinker {
 			}
 			// set cleaned original filename including its path
 			targetStrings.add(target);
-			Log.info("target: " + target);
+			Log.debug("Target: " + target);
 
 			StringBuilder targetFileName = new StringBuilder();
 			if (target.contains("\\")) {

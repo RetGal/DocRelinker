@@ -117,7 +117,7 @@ public class Relinker {
 			throw new IllegalArgumentException("The main document and the target directory must be set first");
 		}
 
-		Log.info("Working directory: " + System.getProperty("user.dir"));
+		Log.debug("Working directory: " + System.getProperty("user.dir"));
 
 		if (mainDocument.getName().endsWith(".docx")) {
 			docType = DocType.DOCX;
@@ -180,7 +180,7 @@ public class Relinker {
 		}
 
 		// re-create the document
-		Log.info("Re-creating " + mainDocument.getName());
+		Log.debug("Re-creating " + mainDocument.getName());
 		// Utils.zipDirectory(new File(targetPath),
 		// targetPath+separator+documentFileName);
 		Utils.zip(new File(tempDir), new File(tempDir + File.separator + mainDocument.getName()), docType);
@@ -190,7 +190,7 @@ public class Relinker {
 		f.renameTo(new File(targetDirectory.getAbsolutePath() + File.separator + mainDocument.getName()));
 
 		// delete the temporary folder including its content
-		Log.info("Removing " + tempDir);
+		Log.debug("Removing " + tempDir);
 		cleanUp();
 
 		// create related folder
@@ -200,7 +200,7 @@ public class Relinker {
 		}
 
 		// copy all related documents to the related folder inside the target
-		Log.info("Copying the related documents to " + relatedDir);
+		Log.debug("Copying the related files to " + relatedDir);
 		return copyRelatedDocuments();
 
 	}
@@ -249,7 +249,7 @@ public class Relinker {
 					: new File(relatedDocStr);
 			File destination = new File(URLDecoder.decode(targetFullPath.toString(), "utf-8"));
 
-			Log.info("Copying '" + related + "' to '" + destination + "'");
+			Log.debug("Copying '" + related + "' to '" + destination + "'");
 
 			if (related.exists()) {
 				Utils.copyFile(related, destination);
@@ -278,14 +278,12 @@ public class Relinker {
 		}
 		if (count > 0) {
 			lastIndex = count * len;
-			ArrayList<String> parts = new ArrayList<>(
-					Arrays.asList(mainDocument.getAbsolutePath().split(File.separator)));
+			ArrayList<String> parts = new ArrayList<>(Arrays.asList(mainDocument.getAbsolutePath().split(File.separator)));
 			if (count <= parts.size()) {
 				for (int i = 0; i < count; i++) {
 					parts.remove(parts.size() - 1);
 				}
-				return new File(
-						String.join(File.separator, parts) + File.separator + relatedDocStr.substring(lastIndex));
+				return new File(String.join(File.separator, parts) + File.separator + relatedDocStr.substring(lastIndex));
 			}
 		}
 		return new File(relatedDocStr);

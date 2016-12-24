@@ -45,7 +45,7 @@ abstract class DocumentRelinker {
 		String target = URLDecoder.decode(link.substring(45, link.lastIndexOf("%3F")), "utf-8");
 		// set cleaned original filename including its path
 		targetStrings.add(target);
-		Log.info("gds target: " + target);
+		Log.debug("gds target: " + target);
 
 		StringBuilder targetFileName = new StringBuilder(target.length());
 		targetFileName.append(".\\").append(relatedDirName).append("\\");

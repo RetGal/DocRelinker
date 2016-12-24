@@ -35,19 +35,19 @@ class DocxRelinker extends DocumentRelinker {
 			for (int i = 0; i < children; i++) {
 				if (root.getChildren().get(i).getAttribute("TargetMode") != null) {
 					String targetLink = root.getChildren().get(i).getAttributeValue("Target");
-					Log.info("targetLink: " + targetLink);
+					Log.debug("targetLink: " + targetLink);
 					if (targetLink.startsWith("file:///")) {
 						// handle regular file links
 						List<String> targetStrings = handleLink(targetLink, relatedDirName);
 						relatedDocuments.add(targetStrings.get(0));
-						Log.info("TargetFileName: " + targetStrings.get(1));
+						Log.info("Related file: " + targetStrings.get(1));
 						// ---- Modify XML data ----
 						root.getChildren().get(i).setAttribute("Target", targetStrings.get(1));
 					} else if (targetLink.startsWith("http://127.0.0.1:4664/redir?url=file%3A%2F%2F")) {
 						// handle Google Desktop Search links
 						List<String> targetStrings = handleGDS(targetLink, relatedDirName);
 						relatedDocuments.add(targetStrings.get(0));
-						Log.info("TargetFileName: " + targetStrings.get(1));
+						Log.info("Related file: " + targetStrings.get(1));
 						// ---- Modify XML data ----
 						root.getChildren().get(i).setAttribute("Target", targetStrings.get(1));
 					}
@@ -81,7 +81,7 @@ class DocxRelinker extends DocumentRelinker {
 		String target = link.substring(8, link.length());
 		// set cleaned original filename including its path
 		targetStrings.add(target);
-		Log.info("target: " + target);
+		Log.debug("Target: " + target);
 
 		StringBuilder targetFileName = new StringBuilder(target.length());
 		targetFileName.append(".\\").append(relatedDirName).append("\\");

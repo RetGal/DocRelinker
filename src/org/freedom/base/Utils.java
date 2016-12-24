@@ -158,12 +158,9 @@ class Utils {
 	 * .odt or .docx suffix) Adds uncompressed mimetype as first file if docType
 	 * is ODT
 	 * 
-	 * @param directory
-	 *            Specified directory
-	 * @param zipFile
-	 *            Output ZIP file name
-	 * @param docType
-	 *            DOCX or ODT
+	 * @param directory Specified directory
+	 * @param zipFile Output ZIP file name
+	 * @param docType DOCX or ODT
 	 * @throws IOException
 	 */
 
@@ -203,7 +200,7 @@ class Utils {
 				} else if ((!docType.equals(ODT)
 						|| (!kid.getName().endsWith(".odt") && !kid.getName().equals("mimetype")))
 						&& (!docType.equals(DOCX) || !kid.getName().endsWith(".docx"))) {
-					Log.info("Zip adding file " + name);
+					Log.debug("Zip adding file " + name);
 					zout.putNextEntry(new ZipEntry(name));
 					copy(kid, zout);
 					zout.closeEntry();
@@ -219,7 +216,7 @@ class Utils {
 			for (File file : node.listFiles()) {
 				// mimetype must be the first entry and not compressed
 				if (file.getName().equals("mimetype")) {
-					Log.info("Zip adding uncompressed mimetype");
+					Log.debug("Zip adding uncompressed mimetype");
 
 					ZipEntry entry = new ZipEntry(file.getName());
 					entry.setMethod(ZipOutputStream.STORED);
