@@ -42,23 +42,17 @@ class Utils {
 
 	/**
 	 * Strips (double) quotes at both ends of a String
-	 * 
-	 * @param path
-	 * @return path
 	 */
 	public static String stripQuotes(String path) {
 
-		if ((path != null && path.length() > 1) && ((path.startsWith("\"") && path.endsWith("\"")) || 
-				(path.startsWith("\'") && path.endsWith("\'")))) {
-			path = path.substring(1, path.length() - 1);
-		}
-		return path;
+		//return path.replaceAll("^[\"']+|[\"']+$","");
+		return path.replaceAll("^(['\"])(.*)\\1$", "$2");
 	}
 
 	public static void copyFile(File sourceFile, File destinationFile) throws IOException {
 
-	    Path source = Paths.get(sourceFile.getPath());
-	    Path destination = Paths.get(destinationFile.getPath());
+		Path source = Paths.get(sourceFile.getPath());
+		Path destination = Paths.get(destinationFile.getPath());
 		Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
 	}
 
@@ -80,7 +74,6 @@ class Utils {
 			copy(in, out);
 		}
 	}
-
 
 	/**
 	 * Deletes directory and all its subdirectories
@@ -118,7 +111,7 @@ class Utils {
 	/**
 	 * Guess what - this one extracts a zipped file
 	 * 
-	 * @param zipFile The file to be unzipped
+	 * @param zipFile  The file to be unzipped
 	 * @param outputFolder Where the content shall be extracted to
 	 * @throws IllegalArgumentException
 	 * @throws IOException
@@ -161,12 +154,16 @@ class Utils {
 	}
 
 	/**
-	 * Zipps specified directory and all its subdirectories (excludes files with .odt or .docx suffix)
-	 * Adds uncompressed mimetype as first file if docType is ODT 
+	 * Zipps specified directory and all its subdirectories (excludes files with
+	 * .odt or .docx suffix) Adds uncompressed mimetype as first file if docType
+	 * is ODT
 	 * 
-	 * @param directory Specified directory
-	 * @param zipFile Output ZIP file name
-	 * @param docType DOCX or ODT
+	 * @param directory
+	 *            Specified directory
+	 * @param zipFile
+	 *            Output ZIP file name
+	 * @param docType
+	 *            DOCX or ODT
 	 * @throws IOException
 	 */
 
@@ -177,7 +174,7 @@ class Utils {
 		queue.push(directory);
 
 		ZipOutputStream zout = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
-		
+
 		zout.setMethod(ZipOutputStream.STORED);
 
 		if (docType.equals(ODT)) {
@@ -203,13 +200,14 @@ class Utils {
 					// Log.info("Zip adding dir "+name);
 					zout.putNextEntry(new ZipEntry(name));
 					zout.closeEntry();
-                } else if ((!docType.equals(ODT) || (!kid.getName().endsWith(".odt") && !kid.getName().equals("mimetype"))) &&
-                        (!docType.equals(DOCX) || !kid.getName().endsWith(".docx"))) {
-                    Log.info("Zip adding file " + name);
-                    zout.putNextEntry(new ZipEntry(name));
-                    copy(kid, zout);
-                    zout.closeEntry();
-                }
+				} else if ((!docType.equals(ODT)
+						|| (!kid.getName().endsWith(".odt") && !kid.getName().equals("mimetype")))
+						&& (!docType.equals(DOCX) || !kid.getName().endsWith(".docx"))) {
+					Log.info("Zip adding file " + name);
+					zout.putNextEntry(new ZipEntry(name));
+					copy(kid, zout);
+					zout.closeEntry();
+				}
 			}
 		}
 		zout.close();

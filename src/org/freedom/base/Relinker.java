@@ -14,8 +14,10 @@ import org.freedom.log.Log;
 
 public class Relinker {
 
-	public enum DocType {ODT, DOCX}
-	
+	public enum DocType {
+		ODT, DOCX
+	}
+
 	private static File mainDocument;
 	private static File targetDirectory;
 	private static final String RELATED = "related";
@@ -25,19 +27,31 @@ public class Relinker {
 	private static DocType docType;
 
 	public Relinker(File document, File path) throws IOException {
+		
 		setMainDocument(document);
 		setTargetDirectory(path);
 	}
 
+	/**
+	 * CLI only
+	 */
 	public static void main(String[] args) throws IOException {
+		
+		scan();
+		process();
+	}
 
+	/**
+	 * CLI only
+	 */
+	private static void scan() {
+		
 		while (true) {
 			try {
-				String documentName = Utils.getUserInput("main document").trim();
-				// double quotes appear under windows if the user drags a file
-				// to the command window while under linux they are being surrounded by quotes
+				String documentName = Utils.getUserInput("main document (.docx or .odt)").trim();
 				documentName = Utils.stripQuotes(documentName);
-				if (!documentName.isEmpty()) {
+				setDocType(documentName);
+				if (docType != null) {
 					setMainDocument(new File(documentName));
 					String targetPath = Utils.getUserInput("target path").trim();
 					targetPath = Utils.stripQuotes(targetPath);
@@ -49,15 +63,30 @@ public class Relinker {
 			} catch (IOException e) {
 				Log.info(e.getMessage());
 			}
-		}
-		process();
+		}	
+	}
 
+	private static void setDocType(String documentName) {
+
+		if (!documentName.isEmpty()) {
+			if (documentName.endsWith(".docx")) {
+				docType = DocType.DOCX;
+			} else if (documentName.endsWith(".odt")) {
+				docType = DocType.ODT;
+			}
+		}
+		return;
 	}
 
 	public static void setMainDocument(File amainDocument) throws IOException {
 
 		if (!amainDocument.exists() || !amainDocument.canRead()) {
 			throw new IOException("File '" + amainDocument + "' is not readable");
+		} else {
+			setDocType(amainDocument.getName());
+			if (docType == null) {
+				throw new IllegalArgumentException("The format of the main document is unsupported");
+			}
 		}
 		// else
 		mainDocument = amainDocument;
@@ -87,8 +116,17 @@ public class Relinker {
 		if (mainDocument == null || targetDirectory == null) {
 			throw new IllegalArgumentException("The main document and the target directory must be set first");
 		}
-		
-		Log.info("Working directory: " +System.getProperty("user.dir"));
+
+		Log.info("Working directory: " + System.getProperty("user.dir"));
+
+		if (mainDocument.getName().endsWith(".docx")) {
+			docType = DocType.DOCX;
+
+		} else if (mainDocument.getName().endsWith(".odt")) {
+			docType = DocType.ODT;
+		} else {
+			throw new IllegalArgumentException("The main document must be a .docx or .odt file");
+		}
 
 		tempDir = targetDirectory + File.separator + ".~";
 		relatedDir = targetDirectory.getAbsolutePath() + File.separator + RELATED;
@@ -104,8 +142,8 @@ public class Relinker {
 		List<File> originalXML = new LinkedList<>();
 		List<File> backupXML = new LinkedList<>();
 
-		if (mainDocument.getName().endsWith(".docx")) {
-			docType = DocType.DOCX;
+		switch (docType) {
+		case DOCX:
 			originalXML.add(new File(tempDir + File.separator + "word" + File.separator + "_rels" + File.separator
 					+ "document.xml.rels"));
 			// linked documents from endnotes reside in another file
@@ -114,14 +152,15 @@ public class Relinker {
 			if (endnotes.exists() && endnotes.isFile() && endnotes.canRead()) {
 				originalXML.add(endnotes);
 			}
-		} else if (mainDocument.getName().endsWith(".odt")) {
+			break;
+		case ODT:
 			docType = DocType.ODT;
 			originalXML.add(new File(tempDir + File.separator + "content.xml"));
+			break;
 		}
 
-		if (!originalXML.get(0).exists()) {
-			throw new IllegalArgumentException(
-					"Unexpected file format (" + originalXML.get(0).getName() + " not found)");
+		if (originalXML.isEmpty() || !originalXML.get(0).exists()) {
+			throw new IllegalArgumentException("Unexpected file format (originalXML not found)");
 		}
 
 		relatedDocuments = new HashSet<>();
@@ -133,8 +172,7 @@ public class Relinker {
 			// links to the related documents (used as working copy)
 			Utils.copyFile(originalXML.get(i), backupXML.get(i));
 
-			// alter the links inside the document, collect the related
-			// documents
+			// alter the links inside the document, collect the related documents
 			replaceAbsoluteLinks(backupXML.get(i), originalXML.get(i));
 
 			// delete the working copy
@@ -169,18 +207,22 @@ public class Relinker {
 
 	private static void replaceAbsoluteLinks(File backupXML, File originalXML) {
 
-		if (docType.equals(DocType.DOCX)) {
-			// read document.xml.rels.bak, manipulate its content and save as document.xml.rels
-			DocxRelinker xmlRelinker = new DocxRelinker(backupXML, originalXML);
+		switch (docType) {
+		case DOCX:
+			// read document.xml.rels.bak, manipulate its content and save as
+			// document.xml.rels
+			DocxRelinker docxRelinker = new DocxRelinker(backupXML, originalXML);
 			// a set containing all related documents
-			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
-		} else if (docType.equals(DocType.ODT)) {
-			// read cobtent.xml.bak, manipulate its content and save as content.xml
-			OdtRelinker xmlRelinker = new OdtRelinker(backupXML, originalXML);
+			relatedDocuments.addAll(docxRelinker.relink(RELATED));
+			break;
+		case ODT:
+			// read cobtent.xml.bak, manipulate its content and save as
+			// content.xml
+			OdtRelinker odtRelinker = new OdtRelinker(backupXML, originalXML);
 			// a set containing all related documents
-			relatedDocuments.addAll(xmlRelinker.relink(RELATED));
+			relatedDocuments.addAll(odtRelinker.relink(RELATED));			
+			break;
 		}
-
 	}
 
 	private static int copyRelatedDocuments() throws IOException {
@@ -203,10 +245,11 @@ public class Relinker {
 			// strings from links may contain special chars like %20
 			String relatedDocStr = URLDecoder.decode(relatedDoc, "utf-8");
 			// maybe relative ?
-			File related = relatedDocStr.startsWith(".."+File.separator) ? fixRelative(relatedDocStr) : new File(relatedDocStr);
+			File related = relatedDocStr.startsWith(".." + File.separator) ? fixRelative(relatedDocStr)
+					: new File(relatedDocStr);
 			File destination = new File(URLDecoder.decode(targetFullPath.toString(), "utf-8"));
 
-			Log.info("Copying '" + related +"' to '" + destination+ "'");
+			Log.info("Copying '" + related + "' to '" + destination + "'");
 
 			if (related.exists()) {
 				Utils.copyFile(related, destination);
@@ -219,27 +262,30 @@ public class Relinker {
 		Log.info("Copied " + copied + " of " + relatedDocuments.size() + " files");
 		return copied;
 	}
-	
+
 	static private File fixRelative(String relatedDocStr) {
-		String needle = ".."+File.separator;
+		
+		String needle = ".." + File.separator;
 		int len = needle.length();
 		int lastIndex = 0;
 		int count = 0;
 		while (lastIndex != -1) {
-		    lastIndex = relatedDocStr.indexOf(needle, lastIndex);
-		    if (lastIndex != -1) {
-		        count++;
-		        lastIndex += len;
-		    }
+			lastIndex = relatedDocStr.indexOf(needle, lastIndex);
+			if (lastIndex != -1) {
+				count++;
+				lastIndex += len;
+			}
 		}
 		if (count > 0) {
-			lastIndex = count*len;
-			ArrayList<String> parts = new ArrayList<>(Arrays.asList(mainDocument.getAbsolutePath().split(File.separator)));
+			lastIndex = count * len;
+			ArrayList<String> parts = new ArrayList<>(
+					Arrays.asList(mainDocument.getAbsolutePath().split(File.separator)));
 			if (count <= parts.size()) {
-				for (int i=0; i<count; i++) {
-					parts.remove(parts.size()-1);
+				for (int i = 0; i < count; i++) {
+					parts.remove(parts.size() - 1);
 				}
-				return new File(String.join(File.separator, parts) + File.separator + relatedDocStr.substring(lastIndex));
+				return new File(
+						String.join(File.separator, parts) + File.separator + relatedDocStr.substring(lastIndex));
 			}
 		}
 		return new File(relatedDocStr);
