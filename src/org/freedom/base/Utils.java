@@ -154,6 +154,29 @@ class Utils {
 	}
 
 	/**
+	 * Updates an existing document using command line zip
+	 *
+	 * @param directoryName The path to the file to be "injected"
+	 * @param documentName The Document to be updated
+	 * @param contentName The file to be "injected" into the existing Document
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	public static void updateDocument(String directoryName, String documentName, String contentName) throws IOException, InterruptedException {
+
+		Log.info("Updating document "+ documentName);
+		java.lang.ProcessBuilder pb = new java.lang.ProcessBuilder("zip", "-r", "../" + documentName, contentName);
+		// change the working directory
+		pb.directory(new java.io.File(directoryName));
+		// start the process
+		java.lang.Process p = pb.start();
+		if (p.isAlive()) {
+			p.waitFor();
+		}
+		Log.debug("Process exited with code = " + p.exitValue());
+	}
+
+	/**
 	 * Zipps specified directory and all its subdirectories (excludes files with
 	 * .odt or .docx suffix) Adds uncompressed mimetype as first file if docType
 	 * is ODT

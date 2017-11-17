@@ -75,7 +75,6 @@ public class Relinker {
 				docType = DocType.ODT;
 			}
 		}
-		return;
 	}
 
 	public static void setMainDocument(File amainDocument) throws IOException {

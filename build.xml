@@ -46,4 +46,14 @@
 		</jar>
 	</target>
 
+	<target name="build_ods_repair" depends="compile">
+		<jar destfile="${dir.build}/odsRepair.jar" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="org.freedom.base.Repair" />
+				<attribute name="Class-Path" value="."/>
+			</manifest>
+			<fileset dir="${dir.bin}" />
+		</jar>
+	</target>
+
 </project>
