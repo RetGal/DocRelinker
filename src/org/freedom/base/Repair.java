@@ -31,13 +31,13 @@ public class Repair {
 	 */
 	private static void scan() {
 		while (true) {
-			sourceDirectoryName = Utils.getUserInput("Enter source directory (the one containing the .ods files)").trim();
+			sourceDirectoryName = Utils.getUserInput("source directory (the one containing the .ods files)").trim();
 			if (!new File(sourceDirectoryName).exists() || !new File(sourceDirectoryName).canRead()) {
 				Log.error("Folder '" + sourceDirectoryName + "' is not readable");
 			} else {
 				sourceDocuments = listDocuments(Utils.stripQuotes(sourceDirectoryName));
 				if (sourceDocuments.length > 0) {
-					String newMasterDocumentName = Utils.getUserInput("Enter the name of the master document (located within " + sourceDirectoryName + ")\ndefault: " + masterDocumentName).trim();
+					String newMasterDocumentName = Utils.getUserInput("the name of the master document (located within " + sourceDirectoryName + ")\ndefault: " + masterDocumentName).trim();
 					if (!newMasterDocumentName.isEmpty()) {
 						masterDocumentName = newMasterDocumentName;
 					}
