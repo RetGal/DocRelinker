@@ -79,6 +79,7 @@ class OdsRepair extends DocumentRelinker {
 		StringBuilder fixed = new StringBuilder();
 		if (link.contains("://")) {
 			link = link.replace("davs://files.", "file://");
+			link = link.replace("of:=['smb://", "of:=['file://");
 			link = link.replace("smb://", "of:file://");
 			LinkHelper helper = new LinkHelper(link, 0, "01-PCTS-Master.ods", fixed);
 			fixed = fixLink(helper);
