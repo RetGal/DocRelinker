@@ -79,7 +79,7 @@ class OdsReplace extends DocumentRelinker {
 					for (Element element : root.getChildren().get(i).getChildren()) {
 						if (element.getName().equals("spreadsheet")) {
 							long numberOfTables = element.getChildren().stream().filter(el -> el.getName().equals("table")).count();
-							int index = position == null ? toIntExact(numberOfTables)-1 : position > 0 ? position-1 : position;
+							int index = (position == null) ? toIntExact(numberOfTables)-1 : position-1;
 							return element.getChildren().get(index).cloneContent();
 						}
 					}

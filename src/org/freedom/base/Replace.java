@@ -85,7 +85,7 @@ public class Replace {
 	public static void process() throws IOException {
 		tempDirectoryName = sourceDirectoryName + File.separator + "tmp";
 
-		List<Content> masterSheet = extractMasterSheet(null);
+		List<Content> masterSheet = extractMasterSheet(position);
 
 		// iterate over each file within the source directory
 		for (File document : sourceDocuments) {
@@ -108,7 +108,7 @@ public class Replace {
 			Utils.copyFile(originalXML, backupXML);
 
 			// alter the links inside the document
-			replaceSheet(backupXML, originalXML, masterSheet, null);
+			replaceSheet(backupXML, originalXML, masterSheet, position);
 
 			// delete the working copy
 			backupXML.delete();
@@ -158,7 +158,7 @@ public class Replace {
 		Utils.copyFile(originalXML, backupXML);
 		
 		OdsReplace odsReplace = new OdsReplace(backupXML, originalXML);
-		List<Content> masterSheet = odsReplace.extractSheet(sourceDirectoryName, null);
+		List<Content> masterSheet = odsReplace.extractSheet(sourceDirectoryName, position);
 		
 	
 		// delete the temporary folder including its content
