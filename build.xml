@@ -55,5 +55,15 @@
 			<fileset dir="${dir.bin}" />
 		</jar>
 	</target>
+	
+	<target name="build_ods_replace" depends="compile">
+		<jar destfile="${dir.build}/odsReplace.jar" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="org.freedom.base.Replace" />
+				<attribute name="Class-Path" value="."/>
+			</manifest>
+			<fileset dir="${dir.bin}" />
+		</jar>
+	</target>
 
 </project>
